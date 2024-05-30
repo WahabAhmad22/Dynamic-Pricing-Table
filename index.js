@@ -1,49 +1,46 @@
 dynamicPricingTable()
 function dynamicPricingTable() {
-    let pricingComponents = document.querySelectorAll('[w-pricingComponent]');
-    if(pricingComponents.length<1) return
+    let pricingComponents = document.querySelectorAll('[pricing-component]');
+    if (pricingComponents.length < 1) return
     pricingComponents.forEach(component => {
-        let currencyBtns = component.querySelectorAll('[w-currencyOption]')
-        let planPeriodBtns = component.querySelectorAll('[w-planPeriod]')
-        let pricingObjectName = component.getAttribute('w-pricingData')
+        let currencySwitchBtns = component.querySelectorAll('[currency-switch]')
+        let pricingSwitchBtns = component.querySelectorAll('[pricing-switch]')
+        let pricingObjectName = component.getAttribute('pricing-data')
         let pricingObject = eval(pricingObjectName)
         const plans = Object.keys(pricingObject.monthly);
         const updatePrices = (type) => {
-            const activeCurrency = component.querySelector('[w-currencyOption].active');
-            const currencyValue = activeCurrency ? activeCurrency.getAttribute('w-currencyOption') : 'gbp';
+            const activeCurrency = component.querySelector('[currency-switch].active');
+            const currencyValue = activeCurrency ? activeCurrency.getAttribute('currency-switch') : 'gbp';
+            updatePricingText(type);
             plans.forEach(plan => {
-                component.querySelector(`[w-planPrice = "${plan}"]`).innerText = getPrice(plan, currencyValue, type);
-                updatePricingText(type);
+                component.querySelector(`[plan-price = "${plan}"]`).innerText = getPrice(plan, currencyValue, type);
             });
         };
         const getPrice = (plan, currency, type) => {
             const price = pricingObject[type][plan][currency];
-            return currency === 'inr' ? `${pricingObject.currency[currency]}${price.toLocaleString('en-IN')}` : `${pricingObject.currency[currency]}${price}`;
+            return `${pricingObject.currency[currency]}${price}`;
         };
         const updatePricingText = (type) => {
-            let planPeriodTexts = Array.from(component.querySelectorAll('[w-planPeriodText]'))
-            planPeriodTexts.forEach(text => text.style.display = 'none')
-            let selectedPeriod = planPeriodTexts.filter(item => {
-                return item.getAttribute('w-planPeriodText') == type
+            component.querySelectorAll(`[per-period-text]`).forEach(text => {
+                text.innerHTML = document.querySelector(`[text-${type}]`).getAttribute(`text-${type}`)
             })
-            selectedPeriod.forEach(item => item.style.display = 'block')
+
         };
-        planPeriodBtns.forEach(btn => {
+        pricingSwitchBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                planPeriodBtns.forEach(btn => btn.classList.remove('active'))
+                pricingSwitchBtns.forEach(btn => btn.classList.remove('active'))
                 btn.classList.add('active')
-                let selectedPlanType = btn.getAttribute('w-planPeriod')
+                let selectedPlanType = btn.getAttribute('pricing-switch')
                 updatePrices(selectedPlanType)
             })
         })
-        currencyBtns.forEach(btn => {
+        currencySwitchBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                currencyBtns.forEach(btn => btn.classList.remove('active'))
+                currencySwitchBtns.forEach(btn => btn.classList.remove('active'))
                 btn.classList.add('active')
-                updatePrices(component.querySelector('[w-planPeriod].active').getAttribute('w-planPeriod'))
+                updatePrices(component.querySelector('[pricing-switch].active').getAttribute('pricing-switch'))
             })
         })
-        // Initial update
-        updatePrices(component.querySelector('[w-planPeriod].active').getAttribute('w-planPeriod'));
-    })    
+        updatePrices(component.querySelector('[pricing-switch].active').getAttribute('pricing-switch'));
+    })
 }
